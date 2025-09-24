@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import type { ZodType } from 'zod';
 import { ZodError } from 'zod';
+import {sanitizeSchema} from "~/utils/sanitizer.js";
 
 export function createValidate(key: 'body' | 'query' | 'params') {
   return async function validate<T>(
@@ -9,7 +10,8 @@ export function createValidate(key: 'body' | 'query' | 'params') {
     response: Response,
   ): Promise<T> {
     try {
-      const result = await schema.safeParseAsync(request[key]);
+      const result = await schema.parseAsync(request[key]);
+      await sanitizeSchema(request[key]);
       return result;
     } catch (error) {
       if (error instanceof ZodError) {

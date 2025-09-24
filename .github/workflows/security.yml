@@ -1,0 +1,52 @@
+name: Security Scans
+
+on:
+  push:
+    branches: ["master", "dev", "feature/*"]
+  pull_request:
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Проверка кода
+        uses: actions/checkout@v4
+
+      - name: Устанавливаем Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Устанавливаем зависимости проекта
+        run: npm install
+
+      - name: Запускаем npm audit
+        run: npm audit --audit-level=high || true
+        continue-on-error: true
+
+      - name: Запускаем Snyk Security Test
+        uses: snyk/actions/node@master
+        with:
+          command: test
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        continue-on-error: true
+
+      - name: Генерируем отчет Snyk
+        uses: snyk/actions/node@master
+        with:
+          command: test --sarif-file-output=snyk.sarif
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        continue-on-error: true
+
+      - name: Выгружаем отчет в GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: snyk.sarif

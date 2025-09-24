@@ -15,7 +15,6 @@ import {
   retrieveUserProfileFromDatabaseById,
   updateUserProfileInDatabaseById,
 } from './user-profile-model.js';
-import { sanitizeSchema } from '~/utils/sanitizer.js';
 import type { UserProfile } from '@prisma/client';
 
 function mapper({ name, email }: UserProfile) {
@@ -25,8 +24,8 @@ export async function getAllUserProfiles(request: Request, response: Response) {
   requireAuthentication(request, response);
   const query = await validateQuery(
     z.object({
-      page: sanitizeSchema(z.coerce.number().positive().default(1)),
-      pageSize: sanitizeSchema(z.coerce.number().positive().default(10)),
+      page: z.coerce.number().positive().default(1),
+      pageSize: z.coerce.number().positive().default(10),
     }),
     request,
     response,
@@ -43,7 +42,7 @@ export async function getAllUserProfiles(request: Request, response: Response) {
 export async function getUserProfileById(request: Request, response: Response) {
   requireAuthentication(request, response);
   const { id } = await validateParams(
-    z.object({ id: sanitizeSchema(z.cuid2()) }),
+    z.object({ id: z.cuid2() }),
     request,
     response,
   );
@@ -59,16 +58,16 @@ export async function getUserProfileById(request: Request, response: Response) {
 export async function updateUserProfile(request: Request, response: Response) {
   requireAuthentication(request, response);
   const { id } = await validateParams(
-    z.object({ id: sanitizeSchema(z.cuid2()) }),
+    z.object({ id: z.cuid2() }),
     request,
     response,
   );
 
   const body = await validateBody(
     z.object({
-      email: sanitizeSchema(z.email().optional()),
-      name: sanitizeSchema(z.string().optional()),
-      id: sanitizeSchema(z.never().optional()),
+      email: z.email().optional(),
+      name: z.string().optional(),
+      id: z.never().optional(),
     }),
     request,
     response,
@@ -106,7 +105,7 @@ export async function updateUserProfile(request: Request, response: Response) {
 export async function deleteUserProfile(request: Request, response: Response) {
   requireAuthentication(request, response);
   const { id } = await validateParams(
-    z.object({ id: sanitizeSchema(z.cuid2()) }),
+    z.object({ id: z.cuid2() }),
     request,
     response,
   );
