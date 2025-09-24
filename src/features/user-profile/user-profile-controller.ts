@@ -15,13 +15,18 @@ import {
   retrieveUserProfileFromDatabaseById,
   updateUserProfileInDatabaseById,
 } from './user-profile-model.js';
+import { sanitizeSchema } from '~/utils/sanitizer.js';
+import type { UserProfile } from '@prisma/client';
 
+function mapper({ name, email }: UserProfile) {
+  return { name, email };
+}
 export async function getAllUserProfiles(request: Request, response: Response) {
   requireAuthentication(request, response);
   const query = await validateQuery(
     z.object({
-      page: z.coerce.number().positive().default(1),
-      pageSize: z.coerce.number().positive().default(10),
+      page: sanitizeSchema(z.coerce.number().positive().default(1)),
+      pageSize: sanitizeSchema(z.coerce.number().positive().default(10)),
     }),
     request,
     response,
@@ -32,20 +37,20 @@ export async function getAllUserProfiles(request: Request, response: Response) {
     pageSize: query.pageSize,
   });
 
-  response.status(200).json(profiles);
+  response.status(200).json(profiles.map(mapper));
 }
 
 export async function getUserProfileById(request: Request, response: Response) {
   requireAuthentication(request, response);
   const { id } = await validateParams(
-    z.object({ id: z.cuid2() }),
+    z.object({ id: sanitizeSchema(z.cuid2()) }),
     request,
     response,
   );
   const profile = await retrieveUserProfileFromDatabaseById(id);
 
   if (profile) {
-    response.status(200).json(profile);
+    response.status(200).json(mapper(profile));
   } else {
     response.status(404).json({ message: 'Not Found' });
   }
@@ -54,28 +59,26 @@ export async function getUserProfileById(request: Request, response: Response) {
 export async function updateUserProfile(request: Request, response: Response) {
   requireAuthentication(request, response);
   const { id } = await validateParams(
-    z.object({ id: z.cuid2() }),
+    z.object({ id: sanitizeSchema(z.cuid2()) }),
     request,
     response,
   );
 
   const body = await validateBody(
     z.object({
-      email: z.email().optional(),
-      name: z.string().optional(),
-      id: z.never().optional(),
+      email: sanitizeSchema(z.email().optional()),
+      name: sanitizeSchema(z.string().optional()),
+      id: sanitizeSchema(z.never().optional()),
     }),
     request,
     response,
   );
 
-  // Определяем наличие полей для обновления
   if (Object.keys(body).length === 0) {
     response.status(400).json({ message: 'No valid fields to update' });
     return;
   }
 
-  // Определяем попытку обновления id
   if ('id' in body) {
     response.status(400).json({ message: 'ID cannot be updated' });
     return;
@@ -86,7 +89,7 @@ export async function updateUserProfile(request: Request, response: Response) {
       id,
       data: body,
     });
-    response.status(200).json(updatedProfile);
+    response.status(200).json(mapper(updatedProfile));
   } catch (error) {
     const message = getErrorMessage(error);
 
@@ -103,14 +106,14 @@ export async function updateUserProfile(request: Request, response: Response) {
 export async function deleteUserProfile(request: Request, response: Response) {
   requireAuthentication(request, response);
   const { id } = await validateParams(
-    z.object({ id: z.cuid2() }),
+    z.object({ id: sanitizeSchema(z.cuid2()) }),
     request,
     response,
   );
 
   try {
     const deletedProfile = await deleteUserProfileFromDatabaseById(id);
-    response.status(200).json(deletedProfile);
+    response.status(200).json(mapper(deletedProfile));
   } catch (error) {
     const message = getErrorMessage(error);
 

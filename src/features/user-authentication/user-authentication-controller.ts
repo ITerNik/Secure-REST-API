@@ -14,12 +14,13 @@ import {
   hashPassword,
   setJwtCookie,
 } from './user-authentication-helpers.js';
+import { sanitizeSchema } from '~/utils/sanitizer.js';
 
 export async function login(request: Request, response: Response) {
   const body = await validateBody(
     z.object({
-      email: z.email(),
-      password: z.string().min(8),
+      email: sanitizeSchema(z.email()),
+      password: sanitizeSchema(z.string().min(8)),
     }),
     request,
     response,
@@ -48,8 +49,8 @@ export async function login(request: Request, response: Response) {
 export async function register(request: Request, response: Response) {
   const body = await validateBody(
     z.object({
-      email: z.email(),
-      password: z.string().min(8),
+      email: sanitizeSchema(z.email()),
+      password: sanitizeSchema(z.string().min(8)),
     }),
     request,
     response,

@@ -9,7 +9,7 @@ export function createValidate(key: 'body' | 'query' | 'params') {
     response: Response,
   ): Promise<T> {
     try {
-      const result = await schema.parseAsync(request[key]);
+      const result = await schema.safeParseAsync(request[key]);
       return result;
     } catch (error) {
       if (error instanceof ZodError) {
