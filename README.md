@@ -26,7 +26,7 @@ API реализовано с использованием Node.js + Express
 
 **Методы:**
 
-- `POST /api/v1/login` - для авторизации пользователя
+- `POST /api/login` - для авторизации пользователя
 
 ```json
 {
@@ -34,24 +34,11 @@ API реализовано с использованием Node.js + Express
   "password": "string"
 }
 ```
-
-- `POST /api/v1/register` - для регистрации пользователя
-
-```json
-{
-  "email": "string",
-  "password": "string"
-}
-```
-
-- `POST /api/v1/logout` - для выхода из сессии
 
 Только вторизованным пользователям:
 
-- `GET /api/v1/user` - получение списка всех пользователей
-- `GET /api/v1/user/:id` - получение данных конкретного пользователя
-- `PATCH /api/v1/user/:id` - изменение данных пользователя
-- `DELETE /api/v1/user/:id` - удаление пользователя
+- `GET /api/data` - получение списка всех пользователей
+- `GET /api/data/:id` - получение данных конкретного пользователя
 
 Модель данных пользователя:
 
@@ -94,11 +81,13 @@ model UserProfile {
 Настроен [пайплайн](https://github.com/ITerNik/Secure-REST-API/actions/runs/17964559755/job/51094348268) анализа кода на уязвимости
 
 **Static Application Testing**: `npm audit --audit-level=high`
-![npm_audit.png](assets/npm_audit.png)
+![npm-audit-1.png](assets/npm-audit-1.png)
 
 **Software Composition Analysis**: `snyk test`
-![snyk_test.png](assets/snyk_test.png)
+![snyk-test-1.png](assets/snyk-test-1.png)
 
-Отчеты генерирует Snyk и выгружает в [GitHub Security](https://github.com/ITerNik/Secure-REST-API/security/code-scanning/tools/Snyk%20Open%20Source/status)
+После `npm audit fix`
 
-Последний успешный пайплайн можно найти [тут](https://github.com/ITerNik/Secure-REST-API/actions/)
+![npm-audit-2.png](assets/npm-audit-2.png)
+
+![snyk-test-2.png](assets/snyk-test-2.png)

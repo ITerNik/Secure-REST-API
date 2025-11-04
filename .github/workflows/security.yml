@@ -24,29 +24,34 @@ jobs:
           node-version: 20
 
       - name: Устанавливаем зависимости проекта
-        run: npm install
+        run: npm ci
+
+      - name: Устанавливаем Snyk CLI
+        run: npm install -g snyk
 
       - name: Запускаем npm audit
         run: npm audit --audit-level=high || true
         continue-on-error: true
 
+      - name: Авторизуемся в Snyk
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: snyk auth $SNYK_TOKEN
+
       - name: Запускаем Snyk Security Test
-        uses: snyk/actions/node@master
-        with:
-          command: test
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         continue-on-error: true
+        run: |
+          snyk test --json > snyk-report.json
+          snyk test --json-file-output=snyk-report.json || true
 
-      - name: Генерируем отчет Snyk
-        uses: snyk/actions/node@master
-        with:
-          command: test --sarif-file-output=snyk.sarif
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        continue-on-error: true
+      - name: Конвертируем в HTML
+        run: |
+          npx snyk-to-html -i snyk-report.json -o snyk-report.html
 
-      - name: Выгружаем отчет в GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
+      - name: Выгружаем отчеты Snyk
+        uses: actions/upload-artifact@v4
         with:
-          sarif_file: snyk.sarif
+          name: snyk-reports
+          path: |
+            snyk-report.json
+            snyk-report.html

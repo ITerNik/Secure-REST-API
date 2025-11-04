@@ -5,4 +5,4 @@ import { userAuthenticationRoutes } from '~/features/user-authentication/user-au
 export const apiV1Router = Router();
 
 apiV1Router.use(userAuthenticationRoutes);
-apiV1Router.use('/user', userProfileRoutes);
+apiV1Router.use('/data', userProfileRoutes);

@@ -10,7 +10,7 @@ export function buildApp(): Express {
   app.use(express.json());
   app.use(cookieParser());
 
-  app.use('/api/v1', apiV1Router);
+  app.use('/api', apiV1Router);
 
   return app;
 }
